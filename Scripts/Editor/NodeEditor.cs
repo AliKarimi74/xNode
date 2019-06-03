@@ -64,17 +64,27 @@ namespace XNodeEditor {
         }
 
         /// <summary> Add items for the context menu when right-clicking this node. Override to add custom menu items. </summary>
-        public virtual void AddContextMenuItems(GenericMenu menu) {
+        public virtual void AddContextMenuItems(GenericMenu menu, NodeGraphEditor graphEditor) {
             // Actions if only one node is selected
-            if (Selection.objects.Length == 1 && Selection.activeObject is XNode.Node) {
+            if (Selection.objects.Length == 1 && Selection.activeObject is XNode.Node)
+            {
                 XNode.Node node = Selection.activeObject as XNode.Node;
                 menu.AddItem(new GUIContent("Move To Top"), false, () => NodeEditorWindow.current.MoveNodeToTop(node));
-                menu.AddItem(new GUIContent("Rename"), false, NodeEditorWindow.current.RenameSelectedNode);
+                if (node.canRenameNode)
+                    menu.AddItem(new GUIContent("Rename"), false, NodeEditorWindow.current.RenameSelectedNode);
+                if (node.canRemoveNode)
+                    menu.AddItem(new GUIContent("Remove"), false, NodeEditorWindow.current.RemoveSelectedNodes);
+                if (node.canDuplicateNode)
+                    menu.AddItem(new GUIContent("Duplicate"), false, NodeEditorWindow.current.DuplicateSelectedNodes);
             }
-
             // Add actions to any number of selected nodes
-            menu.AddItem(new GUIContent("Duplicate"), false, NodeEditorWindow.current.DuplicateSelectedNodes);
-            menu.AddItem(new GUIContent("Remove"), false, NodeEditorWindow.current.RemoveSelectedNodes);
+            else if (Selection.objects.Length > 1)
+            {
+                if (graphEditor.canDuplicateMultipleNode)
+                    menu.AddItem(new GUIContent("Duplicate"), false, NodeEditorWindow.current.DuplicateSelectedNodes);
+                if (graphEditor.canRemoveMultipleNode)
+                    menu.AddItem(new GUIContent("Remove"), false, NodeEditorWindow.current.RemoveSelectedNodes);
+            }
 
             // Custom sctions if only one node is selected
             if (Selection.objects.Length == 1 && Selection.activeObject is XNode.Node) {

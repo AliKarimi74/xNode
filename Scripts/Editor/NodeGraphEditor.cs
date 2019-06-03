@@ -13,6 +13,11 @@ namespace XNodeEditor {
         /// <summary> Are we currently renaming a node? </summary>
         protected bool isRenaming;
 
+        /// <summary> Flag for allowing duplicating some nodes in editor </summary>
+        public bool canDuplicateMultipleNode = true;
+        /// <summary> Flag for allowing removing some nodes in editor </summary>
+        public bool canRemoveMultipleNode = true;
+
         public virtual void OnGUI() { }
 
         /// <summary> Called when opened by NodeEditorWindow </summary>

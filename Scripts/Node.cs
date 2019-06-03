@@ -111,6 +111,13 @@ namespace XNode {
         /// <summary> It is recommended not to modify these at hand. Instead, see <see cref="InputAttribute"/> and <see cref="OutputAttribute"/> </summary>
         [SerializeField] private NodePortDictionary ports = new NodePortDictionary();
 
+        /// <summary> Flag for allowing duplicating in editor </summary>
+        [NonSerialized] public bool canDuplicateNode = true;
+        /// <summary> Flag for allowing renaming in editor </summary>
+        [NonSerialized] public bool canRenameNode = true;
+        /// <summary> Flag for allowing removing node in editor </summary>
+        [NonSerialized] public bool canRemoveNode = true;
+
         /// <summary> Used during node instantiation to fix null/misconfigured graph during OnEnable/Init. Set it before instantiating a node. Will automatically be unset during OnEnable </summary>
         public static NodeGraph graphHotfix;
 

@@ -186,6 +186,28 @@ namespace XNodeEditor {
             w.titleContent = new GUIContent(title);
         }
 
+        private static Dictionary<System.Type, NodeEditorWindow> windows = new Dictionary<System.Type, NodeEditorWindow>();
+        /// <summary>
+        /// Opens the node editor (also open different editor for different graph types)
+        /// </summary>
+        /// <param name="graph">Graph.</param>
+        /// <param name="title">Title.</param>
+        public static void OpenEditor(XNode.NodeGraph graph, string title = "xNode")
+        {
+            System.Type t = graph.GetType();
+            if (!windows.ContainsKey(t))
+                windows.Add(t, CreateInstance<NodeEditorWindow>());
+            if (windows[t] == null)
+                windows[t] = CreateInstance<NodeEditorWindow>();
+
+            NodeEditorWindow w = windows[t];
+            w.wantsMouseMove = true;
+            w.graph = graph;
+            w.titleContent = new GUIContent(title);
+            w.Focus();
+            w.Show();
+        }
+
         /// <summary> Repaint all open NodeEditorWindows. </summary>
         public static void RepaintAll() {
             NodeEditorWindow[] windows = Resources.FindObjectsOfTypeAll<NodeEditorWindow>();

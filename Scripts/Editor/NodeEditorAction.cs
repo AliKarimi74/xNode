@@ -342,8 +342,11 @@ namespace XNodeEditor {
 
         /// <summary> Puts all nodes in focus. If no nodes are present, resets view to  </summary>
         public void Home() {
-            zoom = 2;
-            panOffset = Vector2.zero;
+            if (NodeEditorPreferences.EnableHomeFunctionality)
+            {
+                zoom = 2;
+                panOffset = Vector2.zero;
+            }
         }
 
         /// <summary> Remove nodes in the graph in Selection.objects</summary>

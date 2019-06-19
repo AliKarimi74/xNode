@@ -73,6 +73,13 @@ namespace XNodeEditor {
             }
         }
 
+        /// <summary>
+        /// A flag for enabling home functionality.
+        /// If this set to true, by pressing F key in node editor we can
+        /// see other nodes.
+        /// </summary>
+        public static bool EnableHomeFunctionality = false;
+
         /// <summary> Get settings of current active editor </summary>
         public static Settings GetSettings() {
             if (lastEditor != XNodeEditor.NodeEditorWindow.current.graphEditor) {

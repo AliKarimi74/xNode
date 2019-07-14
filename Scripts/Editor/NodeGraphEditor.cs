@@ -61,6 +61,8 @@ namespace XNodeEditor {
                 });
             }
             menu.AddSeparator("");
+            if (NodeEditorWindow.copyBuffer != null && NodeEditorWindow.copyBuffer.Length > 0) menu.AddItem(new GUIContent("Paste"), false, () => NodeEditorWindow.current.PasteNodes(pos));
+            else menu.AddDisabledItem(new GUIContent("Paste"));
             menu.AddItem(new GUIContent("Preferences"), false, () => NodeEditorWindow.OpenPreferences());
             NodeEditorWindow.AddCustomContextMenuItems(menu, target);
         }
@@ -73,16 +75,27 @@ namespace XNodeEditor {
             return NodeEditorPreferences.GetTypeColor(type);
         }
 
+        public virtual string GetPortTooltip(XNode.NodePort port) {
+            Type portType = port.ValueType;
+            string tooltip = "";
+            tooltip = portType.PrettyName();
+            if (port.IsOutput) {
+                object obj = port.node.GetValue(port);
+                tooltip += " = " + (obj != null ? obj.ToString() : "null");
+            }
+            return tooltip;
+        }
+
+        /// <summary> Deal with objects dropped into the graph through DragAndDrop </summary>
+        public virtual void OnDropObjects(UnityEngine.Object[] objects) {
+            Debug.Log("No OnDropItems override defined for " + GetType());
+        }
+
         /// <summary> Create a node and save it in the graph asset </summary>
         public virtual void CreateNode(Type type, Vector2 position) {
             XNode.Node node = target.AddNode(type);
             node.position = position;
-            if (string.IsNullOrEmpty(node.name)) {
-                // Automatically remove redundant 'Node' postfix
-                string typeName = type.Name;
-                if (typeName.EndsWith("Node")) typeName = typeName.Substring(0, typeName.LastIndexOf("Node"));
-                node.name = UnityEditor.ObjectNames.NicifyVariableName(typeName);
-            }
+            if (node.name == null || node.name.Trim() == "") node.name = NodeEditorUtilities.NodeDefaultName(type);
             AssetDatabase.AddObjectToAsset(node, target);
             if (NodeEditorPreferences.GetSettings().autoSave) AssetDatabase.SaveAssets();
             NodeEditorWindow.RepaintAll();

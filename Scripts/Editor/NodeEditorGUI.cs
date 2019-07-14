@@ -10,9 +10,14 @@ namespace XNodeEditor {
         public NodeGraphEditor graphEditor;
         private List<UnityEngine.Object> selectionCache;
         private List<XNode.Node> culledNodes;
+        /// <summary> 19 if docked, 22 if not </summary>
         private int topPadding { get { return isDocked() ? 19 : 22; } }
+        /// <summary> 0 if docked, 3 if not </summary>
+        private int leftPadding { get { return isDocked() ? 2 : 0; } }
         /// <summary> Executed after all other window GUI. Useful if Zoom is ruining your day. Automatically resets after being run.</summary>
         public event Action onLateGUI;
+
+        private Matrix4x4 prevGuiMatrix;
 
         private void OnGUI() {
             Event e = Event.current;
@@ -27,7 +32,7 @@ namespace XNodeEditor {
             DrawNodes();
             DrawSelectionBox();
             DrawTooltip();
-            graphEditor.OnGUI();
+            DrawGraphOnGUI();
 
             // Run and reset onLateGUI
             if (onLateGUI != null) {
@@ -38,24 +43,50 @@ namespace XNodeEditor {
             GUI.matrix = m;
         }
 
-        public static void BeginZoomed(Rect rect, float zoom, float topPadding) {
-            GUI.EndClip();
+        public void BeginZoomed() {
+            GUI.EndGroup();
 
-            GUIUtility.ScaleAroundPivot(Vector2.one / zoom, rect.size * 0.5f);
-            Vector4 padding = new Vector4(0, topPadding, 0, 0);
-            padding *= zoom;
-            GUI.BeginClip(new Rect(-((rect.width * zoom) - rect.width) * 0.5f, -(((rect.height * zoom) - rect.height) * 0.5f) + (topPadding * zoom),
-                rect.width * zoom,
-                rect.height * zoom));
+            Rect position = new Rect(this.position);
+            position.x = 0;
+            position.y = topPadding;
+
+            Vector2 topLeft = new Vector2(position.xMin, position.yMin - topPadding);
+            Rect clippedArea = ScaleSizeBy(position, zoom, topLeft);
+            GUI.BeginGroup(clippedArea);
+
+            prevGuiMatrix = GUI.matrix;
+            Matrix4x4 translation = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
+            Matrix4x4 scale = Matrix4x4.Scale(new Vector3(1.0f / zoom, 1.0f / zoom, 1.0f));
+            GUI.matrix = translation * scale * translation.inverse * GUI.matrix;
         }
 
-        public static void EndZoomed(Rect rect, float zoom, float topPadding) {
-            GUIUtility.ScaleAroundPivot(Vector2.one * zoom, rect.size * 0.5f);
-            Vector3 offset = new Vector3(
-                (((rect.width * zoom) - rect.width) * 0.5f),
-                (((rect.height * zoom) - rect.height) * 0.5f) + (-topPadding * zoom) + topPadding,
-                0);
-            GUI.matrix = Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one);
+        public void EndZoomed() {
+            GUI.matrix = prevGuiMatrix;
+            GUI.EndGroup();
+            GUI.BeginGroup(new Rect(0.0f, topPadding - (topPadding * zoom), Screen.width, Screen.height));
+        }
+
+        /// <summary> Ends the GUI Group temporarily to draw any additional elements in the NodeGraphEditor. </summary>
+        private void DrawGraphOnGUI() {
+            GUI.EndGroup();
+            Rect rect = new Rect(new Vector2(leftPadding, topPadding), new Vector2(Screen.width, Screen.height));
+            GUI.BeginGroup(rect);
+            graphEditor.OnGUI();
+            GUI.EndGroup();
+            GUI.BeginGroup(new Rect(0.0f, topPadding - (topPadding * zoom), Screen.width, Screen.height));
+        }
+
+        public static Rect ScaleSizeBy(Rect rect, float scale, Vector2 pivotPoint) {
+            Rect result = rect;
+            result.x -= pivotPoint.x;
+            result.y -= pivotPoint.y;
+            result.xMin *= scale;
+            result.xMax *= scale;
+            result.yMin *= scale;
+            result.yMax *= scale;
+            result.x += pivotPoint.x;
+            result.y += pivotPoint.y;
+            return result;
         }
 
         public void DrawGrid(Rect rect, float zoom, Vector2 panOffset) {
@@ -136,8 +167,7 @@ namespace XNodeEditor {
 
                             p = new Vector2(-p.y, p.x) * Mathf.Sign(side) * tangentLength;
                             inputTangent = p;
-                        }
-                        else {
+                        } else {
                             inputTangent = Vector2.left * Vector2.Distance(windowPoints[i], windowPoints[i + 1]) * 0.01f * zoom;
                         }
 
@@ -252,13 +282,7 @@ namespace XNodeEditor {
                 selectionCache = new List<UnityEngine.Object>(Selection.objects);
             }
 
-            System.Reflection.MethodInfo onValidate = null;
-            if (Selection.activeObject != null && Selection.activeObject is XNode.Node) {
-                onValidate = Selection.activeObject.GetType().GetMethod("OnValidate");
-                if (onValidate != null) EditorGUI.BeginChangeCheck();
-            }
-
-            BeginZoomed(position, zoom, topPadding);
+            BeginZoomed();
 
             Vector2 mousePos = Event.current.mousePosition;
 
@@ -389,12 +413,7 @@ namespace XNodeEditor {
             }
 
             if (e.type != EventType.Layout && currentActivity == NodeActivity.DragGrid) Selection.objects = preSelection.ToArray();
-            EndZoomed(position, zoom, topPadding);
-
-            //If a change in is detected in the selected node, call OnValidate method. 
-            //This is done through reflection because OnValidate is only relevant in editor, 
-            //and thus, the code should not be included in build.
-            if (onValidate != null && EditorGUI.EndChangeCheck()) onValidate.Invoke(Selection.activeObject, null);
+            EndZoomed();
         }
 
         private bool ShouldBeCulled(XNode.Node node) {
@@ -411,14 +430,10 @@ namespace XNodeEditor {
         }
 
         private void DrawTooltip() {
-            if (hoveredPort != null) {
-                Type type = hoveredPort.ValueType;
-                GUIContent content = new GUIContent();
-                content.text = type.PrettyName();
-                if (hoveredPort.IsOutput) {
-                    object obj = hoveredPort.node.GetValue(hoveredPort);
-                    content.text += " = " + (obj != null ? obj.ToString() : "null");
-                }
+            if (hoveredPort != null && NodeEditorPreferences.GetSettings().portTooltips && graphEditor != null) {
+                string tooltip = graphEditor.GetPortTooltip(hoveredPort);
+                if (string.IsNullOrEmpty(tooltip)) return;
+                GUIContent content = new GUIContent(tooltip);
                 Vector2 size = NodeEditorResources.styles.tooltip.CalcSize(content);
                 Rect rect = new Rect(Event.current.mousePosition - (size), size);
                 EditorGUI.LabelField(rect, content, NodeEditorResources.styles.tooltip);

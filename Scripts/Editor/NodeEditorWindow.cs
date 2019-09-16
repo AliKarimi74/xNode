@@ -176,6 +176,13 @@ namespace XNodeEditor {
             Selection.objects = selection.ToArray();
         }
 
+        public void GoOverNode(XNode.Node node)
+        {
+            SelectNode(node, false);
+            Home(true);
+            DeselectNode(node);
+        }
+
         [OnOpenAsset(0)]
         public static bool OnOpen(int instanceID, int line) {
             XNode.NodeGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as XNode.NodeGraph;

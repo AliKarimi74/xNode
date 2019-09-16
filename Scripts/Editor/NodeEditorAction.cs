@@ -358,8 +358,8 @@ namespace XNodeEditor {
         }
 
         /// <summary> Puts all selected nodes in focus. If no nodes are present, resets view and zoom to to origin </summary>
-        public void Home() {
-            if (NodeEditorPreferences.EnableHomeFunctionality)
+        public void Home(bool force = false, float prefered_zoom = 1) {
+            if (NodeEditorPreferences.EnableHomeFunctionality || force)
             {
                 var nodes = Selection.objects.Where(o => o is XNode.Node).Cast<XNode.Node>().ToList();
                 if (nodes.Count > 0)
@@ -367,6 +367,7 @@ namespace XNodeEditor {
                     Vector2 minPos = nodes.Select(x => x.position).Aggregate((x, y) => new Vector2(Mathf.Min(x.x, y.x), Mathf.Min(x.y, y.y)));
                     Vector2 maxPos = nodes.Select(x => x.position + (nodeSizes.ContainsKey(x) ? nodeSizes[x] : Vector2.zero)).Aggregate((x, y) => new Vector2(Mathf.Max(x.x, y.x), Mathf.Max(x.y, y.y)));
                     panOffset = -(minPos + (maxPos - minPos) / 2f);
+                    zoom = prefered_zoom;
                 }
                 else
                 {

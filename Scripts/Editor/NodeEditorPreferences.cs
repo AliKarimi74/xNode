@@ -82,6 +82,12 @@ namespace XNodeEditor {
         /// </summary>
         public static bool EnableHomeFunctionality = false;
 
+        /// <summary>
+        /// A flag for enabling select all shortcut.
+        /// If this set to true, by pressing A key in node editor all nodes selected.
+        /// </summary>
+        public static bool EnableSelectAllFunctionality = false;
+
         /// <summary> Get settings of current active editor </summary>
         public static Settings GetSettings() {
             if (lastEditor != XNodeEditor.NodeEditorWindow.current.graphEditor) {

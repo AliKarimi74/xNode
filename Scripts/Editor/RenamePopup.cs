@@ -57,10 +57,14 @@ namespace XNodeEditor {
             // Rename asset to input text
             else {
                 if (GUILayout.Button("Apply") || (e.isKey && e.keyCode == KeyCode.Return)) {
+                    var old_name = target.name;
                     target.name = input;
                     AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(target));
                     Close();
 					target.TriggerOnValidate();
+
+                    if (target is XNode.Node)
+                        (target as XNode.Node).Rename(old_name, input);
                 }
             }
         }

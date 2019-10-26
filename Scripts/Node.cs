@@ -141,6 +141,27 @@ namespace XNode {
             foreach (NodePort port in Ports) port.VerifyConnections();
         }
 
+        /// <summary>
+        /// Rename the node. For renaming a node use this function, not
+        /// assign some name to node.name
+        /// </summary>
+        /// <param name="old_name">Old name</param>
+        /// <param name="new_name">New name</param>
+        public void Rename(string old_name, string new_name)
+        {
+            name = new_name;
+            OnRename(old_name, new_name);
+        }
+
+
+        /// <summary>
+        /// Rename callback.
+        /// </summary>
+        protected virtual void OnRename(string old_name, string new_name)
+        {
+
+        }
+
 #region Dynamic Ports
         /// <summary> Convenience function. </summary>
         /// <seealso cref="AddInstancePort"/>

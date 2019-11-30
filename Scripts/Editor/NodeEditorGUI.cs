@@ -388,7 +388,7 @@ namespace XNodeEditor {
                         culledNodes.Add(node);
                         continue;
                     }
-                } else if (culledNodes.Contains(node)) continue;
+                } else if (culledNodes != null && culledNodes.Contains(node)) continue;
 
                 if (e.type == EventType.Repaint) {
                     removeEntries.Clear();
@@ -409,7 +409,7 @@ namespace XNodeEditor {
 
                 GUILayout.BeginArea(new Rect(nodePos, new Vector2(nodeEditor.GetWidth(), 4000)));
 
-                bool selected = selectionCache.Contains(graph.nodes[n]);
+                bool selected = selectionCache != null && selectionCache.Contains(graph.nodes[n]);
 
                 if (selected) {
                     GUIStyle style = new GUIStyle(nodeEditor.GetBodyStyle());

@@ -51,7 +51,6 @@ namespace XNodeEditor {
             // Iterate through serialized properties and draw them like the Inspector (But with ports)
             SerializedProperty iterator = serializedObject.GetIterator();
             bool enterChildren = true;
-            EditorGUIUtility.labelWidth = 84;
             while (iterator.NextVisible(enterChildren)) {
                 enterChildren = false;
                 if (excludes.Contains(iterator.name)) continue;
@@ -73,8 +72,6 @@ namespace XNodeEditor {
                 GUIHelper.ClearRepaintRequest();
                 window.Repaint();
             }
-#else
-            window.Repaint();
 #endif
 
 #if ODIN_INSPECTOR
@@ -101,6 +98,10 @@ namespace XNodeEditor {
 
         public virtual GUIStyle GetBodyStyle() {
             return NodeEditorResources.styles.nodeBody;
+        }
+
+        public virtual GUIStyle GetBodyHighlightStyle() {
+            return NodeEditorResources.styles.nodeHighlight;
         }
 
         /// <summary> Add items for the context menu when right-clicking this node. Override to add custom menu items. </summary>

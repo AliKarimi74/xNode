@@ -99,7 +99,7 @@ namespace XNodeEditor {
             NodeGraphEditor graphEditor = NodeGraphEditor.GetEditor(graph, this);
             if (this.graphEditor != graphEditor) {
                 this.graphEditor = graphEditor;
-                graphEditor.OnOpen();
+                this.graphEditor.OnOpen();
             }
         }
 
@@ -221,6 +221,7 @@ namespace XNodeEditor {
             w.wantsMouseMove = true;
             w.graph = graph;
             w.titleContent = new GUIContent(title);
+            w.graphEditor?.OnOpen();
             w.Focus();
             w.Show();
         }

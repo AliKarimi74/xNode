@@ -92,6 +92,11 @@ namespace XNodeEditor {
         /// </summary>
         public static bool EnableSelectAllFunctionality = false;
 
+        /// <summary>
+        /// A flag for enabling rename shortcut key.
+        /// </summary>
+        public static bool EnableRenameShortcutKey = false;
+
         /// <summary> Get settings of current active editor </summary>
         public static Settings GetSettings() {
             if (XNodeEditor.NodeEditorWindow.current == null) return new Settings();

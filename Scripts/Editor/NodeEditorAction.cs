@@ -295,10 +295,16 @@ namespace XNodeEditor {
                 case EventType.KeyDown:
                     if (EditorGUIUtility.editingTextField) break;
                     else if (e.keyCode == KeyCode.F) Home();
-                    if (NodeEditorUtilities.IsMac()) {
-                        if (e.keyCode == KeyCode.Return) RenameSelectedNode();
-                    } else {
-                        if (e.keyCode == KeyCode.F2) RenameSelectedNode();
+                    if (NodeEditorPreferences.EnableRenameShortcutKey)
+                    {
+                        if (NodeEditorUtilities.IsMac())
+                        {
+                            if (e.keyCode == KeyCode.Return) RenameSelectedNode();
+                        }
+                        else
+                        {
+                            if (e.keyCode == KeyCode.F2) RenameSelectedNode();
+                        }
                     }
                     if (e.keyCode == KeyCode.A && NodeEditorPreferences.EnableSelectAllFunctionality) {
                         if (Selection.objects.Any(x => graph.nodes.Contains(x as XNode.Node))) {

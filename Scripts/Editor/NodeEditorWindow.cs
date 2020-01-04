@@ -194,13 +194,14 @@ namespace XNodeEditor {
         }
 
         /// <summary>Open the provided graph in the NodeEditor</summary>
-        public static void Open(XNode.NodeGraph graph, string title = "xNode") {
-            if (!graph) return;
+        public static NodeEditorWindow Open(XNode.NodeGraph graph, string title = "xNode") {
+            if (!graph) return null;
 
             NodeEditorWindow w = GetWindow(typeof(NodeEditorWindow), false, title, true) as NodeEditorWindow;
             w.wantsMouseMove = true;
             w.graph = graph;
             w.titleContent = new GUIContent(title);
+            return w;
         }
 
         private static Dictionary<System.Type, NodeEditorWindow> windows = new Dictionary<System.Type, NodeEditorWindow>();

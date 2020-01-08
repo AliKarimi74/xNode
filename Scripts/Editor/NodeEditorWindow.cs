@@ -204,7 +204,7 @@ namespace XNodeEditor {
             return w;
         }
 
-        private static Dictionary<System.Type, NodeEditorWindow> windows = new Dictionary<System.Type, NodeEditorWindow>();
+        private static Dictionary<System.Type, Stack<NodeEditorWindow>> windows = new Dictionary<System.Type, Stack<NodeEditorWindow>>();
         /// <summary>
         /// Opens the node editor (also open different editor for different graph types)
         /// </summary>
@@ -212,13 +212,23 @@ namespace XNodeEditor {
         /// <param name="title">Title.</param>
         public static void OpenEditor(XNode.NodeGraph graph, string title = "xNode")
         {
+            bool open_in_new_window = false;
+            var e = Event.current;
+            if (NodeEditorUtilities.IsMac())
+                open_in_new_window = e.command;
+            else
+                open_in_new_window = e.control;
             System.Type t = graph.GetType();
-            if (!windows.ContainsKey(t))
-                windows.Add(t, CreateInstance<NodeEditorWindow>());
-            if (windows[t] == null)
-                windows[t] = CreateInstance<NodeEditorWindow>();
 
-            NodeEditorWindow w = windows[t];
+            if (!windows.ContainsKey(t))
+                windows.Add(t, new Stack<NodeEditorWindow>());
+            while (windows[t].Count > 0 && windows[t].Peek() == null)
+                windows[t].Pop();
+                
+            if (open_in_new_window || windows[t].Count == 0)
+                windows[t].Push(CreateInstance<NodeEditorWindow>());
+
+            NodeEditorWindow w = windows[t].Peek();
             w.wantsMouseMove = true;
             w.graph = graph;
             w.titleContent = new GUIContent(title);
